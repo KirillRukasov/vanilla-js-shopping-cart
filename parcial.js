@@ -4,6 +4,9 @@
  * Rukasov Kirill
  */
 
+const IMAGE_BASE_PATH = 'img/products/';
+const FALLBACK_IMAGE = 'img/producto-ejemplo.svg';
+
 // Array de productos
 const products = [
     {
@@ -11,7 +14,7 @@ const products = [
         name: 'Celular Samsung Galaxy S25',
         description: 'Teléfono inteligente de última generación con cámara de 108MP y pantalla AMOLED de 6.7 pulgadas',
         price: 45000,
-        image: 'img/products/s25-ultra-gold.png',
+        image: 's25-ultra-gold.png',
         category: 'Electrónicos',
     },
     {
@@ -19,7 +22,7 @@ const products = [
         name: 'Laptop Gigabyte AORUS 5 SE4',
         description: 'Laptop para gaming con procesador Intel i7, 16GB RAM y tarjeta gráfica RTX 3070',
         price: 120000,
-        image: 'img/products/gigabyte-aorus.png',
+        image: 'gigabyte-aorus.png',
         category: 'Electrónicos',
     },
     {
@@ -27,7 +30,7 @@ const products = [
         name: 'Auriculares Sony WF-XB700',
         description: 'Auriculares inalámbricos con cancelación de ruido activa y 30 horas de batería',
         price: 15000,
-        image: 'img/products/wf-xb700-black.png',
+        image: 'wf-xb700-black.png',
         category: 'Electrónicos',
     },
     {
@@ -35,7 +38,7 @@ const products = [
         name: 'Camiseta Deportiva Elite',
         description: 'Camiseta de alto rendimiento con tecnología de absorción de humedad',
         price: 2500,
-        image: 'img/products/camisetas-deportivas.png',
+        image: 'camisetas-deportivas.png',
         category: 'Ropa',
     },
     {
@@ -43,7 +46,7 @@ const products = [
         name: 'Zapatillas Nike Air Max 97',
         description: 'Zapatillas para correr con amortiguación avanzada y suela antideslizante',
         price: 8500,
-        image: 'img/products/air-max-97.png',
+        image: 'air-max-97.png',
         category: 'Ropa',
     },
     {
@@ -51,7 +54,7 @@ const products = [
         name: 'Mochila Korin Flexpack Pro',
         description: 'Mochila resistente al agua con múltiples compartimentos y capacidad de 35L',
         price: 5200,
-        image: 'img/products/korin-flexpack-pro.png',
+        image: 'korin-flexpack-pro.png',
         category: 'Accesorios',
     },
 ];
@@ -87,16 +90,21 @@ const shoppingCart = {
     }
 };
 
+// Supporting functions
+function getImageUrl(imageName) {
+    return IMAGE_BASE_PATH + imageName;
+}
+
 // DOM manipulation functions
 function createProductElement(product) {
     const li = document.createElement('li');
     
     const img = document.createElement('img');
-    img.src = product.image;
+    img.src = getImageUrl(product.image);
     img.alt = product.name;
     img.loading = 'lazy';
     img.onerror = function() {
-        this.src = 'img/producto-ejemplo.svg';
+        this.src = FALLBACK_IMAGE;
     };
     
     const div = document.createElement('div');
@@ -168,7 +176,7 @@ function createProductDetailModal(product) {
     detailDiv.className = 'detalle';
     
     const img = document.createElement('img');
-    img.src = product.image;
+    img.src = getImageUrl(product.image);
     img.alt = product.name;
     
     const h3 = document.createElement('h3');
