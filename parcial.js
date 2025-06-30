@@ -116,7 +116,10 @@ function createProductElement(product) {
     description.textContent = product.description;
     
     const priceP = document.createElement('p');
-    priceP.innerHTML = `Precio: $<span>${product.price}</span>`;
+    const priceText = document.createTextNode('Precio: $');
+    const priceSpan = document.createElement('span');
+    priceSpan.textContent = product.price;
+    priceP.append(priceText, priceSpan);
     
     const category = document.createElement('p');
     category.textContent = product.category;
@@ -134,15 +137,10 @@ function createProductElement(product) {
             showProductDetail(product);
         }
     });
-    
-    div.appendChild(h3);
-    div.appendChild(description);
-    div.appendChild(priceP);
-    div.appendChild(category);
-    div.appendChild(button);
-    
-    li.appendChild(img);
-    li.appendChild(div);
+
+    div.append(h3, description, priceP, category, button);
+
+    li.append(img, div);
     
     return li;
 }
@@ -150,11 +148,11 @@ function createProductElement(product) {
 function renderProducts() {
     const productsList = document.getElementById('productos');
     // Clear existing products (except the example ones from HTML)
-    productsList.innerHTML = '';
+    productsList.replaceChildren();
     
     products.forEach(product => {
         const productElement = createProductElement(product);
-        productsList.appendChild(productElement);
+        productsList.append(productElement);
     });
 }
 
@@ -186,7 +184,10 @@ function createProductDetailModal(product) {
     description.textContent = product.description;
     
     const priceP = document.createElement('p');
-    priceP.innerHTML = `Precio: $<span>${product.price}</span>`;
+    const priceText = document.createTextNode('Precio: $');
+    const priceSpan = document.createElement('span');
+    priceSpan.textContent = product.price;
+    priceP.append(priceText, priceSpan);
     
     const category = document.createElement('p');
     category.textContent = product.category;
@@ -197,7 +198,7 @@ function createProductDetailModal(product) {
     closeButton.textContent = 'Cerrar';
     closeButton.addEventListener('click', () => {
         dialog.close();
-        modalContainer.removeChild(dialog);
+        dialog.remove();
     });
     
     const addButton = document.createElement('button');
@@ -206,21 +207,15 @@ function createProductDetailModal(product) {
         shoppingCart.addProduct(product);
         updateCartDisplay();
         dialog.close();
-        modalContainer.removeChild(dialog);
+        dialog.remove();
     });
+
+    footer.append(closeButton, addButton);
+
+    detailDiv.append(img, h3, description, priceP, category, footer);
     
-    footer.appendChild(closeButton);
-    footer.appendChild(addButton);
-    
-    detailDiv.appendChild(img);
-    detailDiv.appendChild(h3);
-    detailDiv.appendChild(description);
-    detailDiv.appendChild(priceP);
-    detailDiv.appendChild(category);
-    detailDiv.appendChild(footer);
-    
-    dialog.appendChild(detailDiv);
-    modalContainer.appendChild(dialog);
+    dialog.append(detailDiv);
+    modalContainer.append(dialog);
     
     return dialog;
 }
@@ -247,19 +242,20 @@ function createCartModal() {
     const totalSpan = document.createElement('span');
     totalSpan.textContent = `Total: $${shoppingCart.calculateTotal()}`;
     
-    header.appendChild(itemsSpan);
-    header.appendChild(totalSpan);
+    header.append(itemsSpan, totalSpan);
     
     const ul = document.createElement('ul');
     
     if (shoppingCart.items.length === 0) {
         const li = document.createElement('li');
         li.textContent = 'El carrito está vacío';
-        ul.appendChild(li);
+        ul.append(li);
     } else {
         shoppingCart.items.forEach(item => {
             const li = document.createElement('li');
-            li.innerHTML = `${item.product.name} - ${item.quantity} x $${item.product.price} `;
+            li.append (
+                document.createTextNode(`${item.product.name} - ${item.quantity} x $${item.product.price} `)
+            );
             
             const removeLink = document.createElement('a');
             removeLink.href = '#';
@@ -268,12 +264,12 @@ function createCartModal() {
                 e.preventDefault();
                 shoppingCart.removeProduct(item.product.id);
                 dialog.close();
-                modalContainer.removeChild(dialog);
+                dialog.remove();
                 updateCartDisplay();
             });
             
-            li.appendChild(removeLink);
-            ul.appendChild(li);
+            li.append(removeLink);
+            ul.append(li);
         });
     }
     
@@ -283,7 +279,7 @@ function createCartModal() {
     closeButton.textContent = 'Cerrar';
     closeButton.addEventListener('click', () => {
         dialog.close();
-        modalContainer.removeChild(dialog);
+        dialog.remove();
     });
     
     const clearButton = document.createElement('button');
@@ -291,7 +287,7 @@ function createCartModal() {
     clearButton.addEventListener('click', () => {
         shoppingCart.clearCart();
         dialog.close();
-        modalContainer.removeChild(dialog);
+        dialog.remove();
         updateCartDisplay();
     });
     
@@ -306,19 +302,15 @@ function createCartModal() {
             alert('El carrito está vacío');
         }
         dialog.close();
-        modalContainer.removeChild(dialog);
+        dialog.remove();
     });
+
+    footer.append(closeButton, clearButton, checkoutButton);
+
+    cartDiv.append(header, ul, footer);
     
-    footer.appendChild(closeButton);
-    footer.appendChild(clearButton);
-    footer.appendChild(checkoutButton);
-    
-    cartDiv.appendChild(header);
-    cartDiv.appendChild(ul);
-    cartDiv.appendChild(footer);
-    
-    dialog.appendChild(cartDiv);
-    modalContainer.appendChild(dialog);
+    dialog.append(cartDiv);
+    modalContainer.append(dialog);
     
     return dialog;
 }
