@@ -7,6 +7,18 @@
 const IMAGE_BASE_PATH = 'img/products/';
 const FALLBACK_IMAGE = 'img/producto-ejemplo.svg';
 
+// sistema de categorías
+
+const categories = [
+    { id: 'all', name: 'Todos los productos' },
+    { id: 'electronics', name: 'Electrónicos' },
+    { id: 'clothing', name: 'Ropa' },
+    { id: 'accessories', name: 'Accesorios' }
+];
+
+
+let currentCategory = 'all';
+
 // Array de productos
 const products = [
     {
@@ -15,7 +27,7 @@ const products = [
         description: 'Teléfono inteligente de última generación con cámara de 108MP y pantalla AMOLED de 6.7 pulgadas',
         price: 45000,
         image: 's25-ultra-gold.png',
-        category: 'Electrónicos',
+        category: 'electronics',
     },
     {
         id: 2,
@@ -23,7 +35,7 @@ const products = [
         description: 'Laptop para gaming con procesador Intel i7, 16GB RAM y tarjeta gráfica RTX 3070',
         price: 120000,
         image: 'gigabyte-aorus.png',
-        category: 'Electrónicos',
+        category: 'electronics',
     },
     {
         id: 3,
@@ -31,7 +43,7 @@ const products = [
         description: 'Auriculares inalámbricos con cancelación de ruido activa y 30 horas de batería',
         price: 15000,
         image: 'wf-xb700-black.png',
-        category: 'Electrónicos',
+        category: 'electronics',
     },
     {
         id: 4,
@@ -39,7 +51,7 @@ const products = [
         description: 'Camiseta de alto rendimiento con tecnología de absorción de humedad',
         price: 2500,
         image: 'camisetas-deportivas.png',
-        category: 'Ropa',
+        category: 'clothing',
     },
     {
         id: 5,
@@ -47,7 +59,7 @@ const products = [
         description: 'Zapatillas para correr con amortiguación avanzada y suela antideslizante',
         price: 8500,
         image: 'air-max-97.png',
-        category: 'Ropa',
+        category: 'clothing',
     },
     {
         id: 6,
@@ -55,9 +67,70 @@ const products = [
         description: 'Mochila resistente al agua con múltiples compartimentos y capacidad de 35L',
         price: 5200,
         image: 'korin-flexpack-pro.png',
-        category: 'Accesorios',
+        category: 'accessories',
     },
 ];
+
+// nav function
+
+function createCategoryNavigation() {
+    const main = document.querySelector('main');
+    const categoryNav = document.createElement('nav');
+    categoryNav.id = 'category-nav';
+    
+    const categoryTitle = document.createElement('h3');
+    categoryTitle.textContent = 'Categorías';
+    categoryNav.appendChild(categoryTitle);
+    
+    const categoryList = document.createElement('ul');
+    categoryList.className = 'category-list';
+    
+    categories.forEach(category => {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        button.textContent = category.name;
+        button.className = currentCategory === category.id ? 'active' : '';
+        button.dataset.categoryId = category.id;
+        
+        button.addEventListener('click', () => {
+            filterByCategory(category.id);
+            updateActiveCategory(category.id);
+        });
+        
+        li.appendChild(button);
+        categoryList.appendChild(li);
+    });
+    
+    categoryNav.appendChild(categoryList);
+    
+    const productsTitle = main.querySelector('h2');
+    main.insertBefore(categoryNav, productsTitle);
+}
+
+// filtration function
+
+function filterByCategory(categoryId) {
+    currentCategory = categoryId;
+    
+    let filteredProducts;
+    if (categoryId === 'all') {
+        filteredProducts = products;
+    } else {
+        filteredProducts = products.filter(product => product.category === categoryId);
+    }
+    
+    renderProducts(filteredProducts);
+}
+
+function updateActiveCategory(categoryId) {
+    const categoryButtons = document.querySelectorAll('#category-nav button');
+    categoryButtons.forEach(button => {
+        button.classList.remove('active');
+        if (button.dataset.categoryId === categoryId) {
+            button.classList.add('active');
+        }
+    });
+}
 
 // Shopping cart object
 const shoppingCart = {
@@ -122,7 +195,8 @@ function createProductElement(product) {
     priceP.append(priceText, priceSpan);
     
     const category = document.createElement('p');
-    category.textContent = product.category;
+    const categoryName = categories.find(cat => cat.id === product.category)?.name || product.category;
+    category.textContent = categoryName;
     
     const button = document.createElement('button');
     button.textContent = 'Agregar';
@@ -145,12 +219,12 @@ function createProductElement(product) {
     return li;
 }
 
-function renderProducts() {
+function renderProducts(productsToRender = products) {
     const productsList = document.getElementById('productos');
     // Clear existing products (except the example ones from HTML)
     productsList.replaceChildren();
     
-    products.forEach(product => {
+    productsToRender.forEach(product => {
         const productElement = createProductElement(product);
         productsList.append(productElement);
     });
@@ -322,6 +396,9 @@ function showCartModal() {
 
 // Initialize the application
 function initializeApp() {
+    // Create category navigation
+    createCategoryNavigation();
+
     // Render products dynamically
     renderProducts();
     
