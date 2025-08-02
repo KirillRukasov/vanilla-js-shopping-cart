@@ -19,6 +19,76 @@ const categories = [
 
 let currentCategory = 'all';
 
+// banners
+
+const categoryOffers = {
+    electronics: [
+        {
+            title: '¡Oferta Flash!',
+            message: '20% OFF en todos los smartphones Samsung',
+            productId: 1,
+            action: 'Ver producto',
+            discount: 20
+        },
+        {
+            title: '¡Último día!',
+            message: 'Laptops gaming con envío gratis',
+            productId: 2,
+            action: 'Aprovecha ahora',
+            discount: 15
+        },
+        {
+            title: '¡Super promo!',
+            message: 'Auriculares Sony - 2x1 en accesorios',
+            productId: 3,
+            action: 'Ver oferta',
+            discount: 25
+        }
+    ],
+    clothing: [
+        {
+            title: '¡Temporada de descuentos!',
+            message: 'Ropa deportiva hasta 30% OFF',
+            categoryId: 'clothing',
+            action: 'Ver colección',
+            discount: 30
+        },
+        {
+            title: '¡Oferta especial!',
+            message: 'Zapatillas Nike - Comprá 2 y llevate 3',
+            productId: 5,
+            action: 'Aprovechar',
+            discount: 25
+        },
+        {
+            title: '¡Liquidación!',
+            message: 'Camisetas deportivas desde $1500',
+            productId: 4,
+            action: 'Comprar ahora',
+            discount: 40
+        }
+    ],
+    accessories: [
+        {
+            title: '¡Envío gratis!',
+            message: 'Mochilas premium con 6 cuotas sin interés',
+            productId: 6,
+            action: 'Financiar compra',
+            discount: 0
+        },
+        {
+            title: '¡Combo perfecto!',
+            message: 'Accesorios + 15% extra en segunda compra',
+            categoryId: 'accessories',
+            action: 'Ver combos',
+            discount: 15
+        }
+    ]
+};
+
+let currentBanner = null;
+let bannerTimeout = null;
+
 // Array de productos
 const products = [
     {
@@ -71,6 +141,121 @@ const products = [
     },
 ];
 
+// banner functions
+
+function getRandomOffer(categoryId) {
+    if (!categoryOffers[categoryId] || categoryOffers[categoryId].length === 0) {
+        return null;
+    }
+    
+    const offers = categoryOffers[categoryId];
+    const randomIndex = Math.floor(Math.random() * offers.length);
+    return offers[randomIndex];
+}
+
+function createBannerElement(offer) {
+    const banner = document.createElement('div');
+    banner.id = 'floating-banner';
+    banner.className = 'floating-banner';
+    
+    const closeButton = document.createElement('button');
+    closeButton.className = 'banner-close';
+    closeButton.textContent = '×';
+    closeButton.setAttribute('aria-label', 'Cerrar banner');
+    closeButton.addEventListener('click', () => {
+        removeBanner();
+    });
+    
+    const content = document.createElement('div');
+    content.className = 'banner-content';
+    
+    const title = document.createElement('h4');
+    title.textContent = offer.title;
+    
+    const message = document.createElement('p');
+    message.textContent = offer.message;
+    
+    const actionButton = document.createElement('button');
+    actionButton.className = 'banner-action';
+    actionButton.textContent = offer.action;
+    
+    if (offer.productId) {
+        actionButton.addEventListener('click', () => {
+            const product = products.find(p => p.id === offer.productId);
+            if (product) {
+                showProductDetail(product);
+                removeBanner();
+            }
+        });
+    } else if (offer.categoryId) {
+        actionButton.addEventListener('click', () => {
+            filterByCategory(offer.categoryId);
+            updateActiveCategory(offer.categoryId);
+            removeBanner();
+        });
+    }
+    
+    if (offer.discount > 0) {
+        const discountBadge = document.createElement('span');
+        discountBadge.className = 'discount-badge';
+        discountBadge.textContent = `-${offer.discount}%`;
+        banner.append(discountBadge);
+    }
+    
+    content.append(title, message, actionButton);
+    banner.append(closeButton, content);
+    
+    return banner;
+}
+
+function showBanner(categoryId) {
+    if (currentBanner) {
+        removeBanner();
+    }
+    
+    if (categoryId === 'all') {
+        return;
+    }
+    
+    const offer = getRandomOffer(categoryId);
+    if (!offer) {
+        return;
+    }
+    
+    currentBanner = createBannerElement(offer);
+    document.body.append(currentBanner);
+    
+    setTimeout(() => {
+        currentBanner.classList.add('show');
+    }, 100);
+    
+    bannerTimeout = setTimeout(() => {
+        removeBanner();
+    }, 10000);
+}
+
+function removeBanner() {
+    if (currentBanner) {
+        if (bannerTimeout) {
+            clearTimeout(bannerTimeout);
+            bannerTimeout = null;
+        }
+        
+        currentBanner.classList.add('hide');
+        
+        setTimeout(() => {
+            if (currentBanner && currentBanner.parentNode) {
+                currentBanner.remove();
+            }
+            currentBanner = null;
+        }, 300);
+    }
+}
+
+function cleanupBanners() {
+    removeBanner();
+}
+
 // nav function
 
 function createCategoryNavigation() {
@@ -120,6 +305,8 @@ function filterByCategory(categoryId) {
     }
     
     renderProducts(filteredProducts);
+
+    showBanner(categoryId);
 }
 
 function updateActiveCategory(categoryId) {
@@ -264,7 +451,8 @@ function createProductDetailModal(product) {
     priceP.append(priceText, priceSpan);
     
     const category = document.createElement('p');
-    category.textContent = product.category;
+    const categoryName = categories.find(cat => cat.id === product.category)?.name || product.category;
+    category.textContent = categoryName;
     
     const footer = document.createElement('footer');
     
@@ -295,6 +483,8 @@ function createProductDetailModal(product) {
 }
 
 function showProductDetail(product) {
+    cleanupBanners();
+    
     const modal = createProductDetailModal(product);
     modal.showModal();
 }
@@ -390,6 +580,8 @@ function createCartModal() {
 }
 
 function showCartModal() {
+    cleanupBanners();
+    
     const modal = createCartModal();
     modal.showModal();
 }
